@@ -20,7 +20,6 @@ import Search from '@material-ui/icons/Search'
 import ViewColumn from '@material-ui/icons/ViewColumn'
 import Alert from '@material-ui/lab/Alert'
 import axios from '../../utils/axios'
-import {Add} from "@material-ui/icons";
 
 const tableIcons = {
     Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -64,7 +63,7 @@ class ProductManageForm extends React.PureComponent {
         pn: '',
         st: '',
         un: '',
-        pr: 0,
+        pr: '',
         br: '',
         ac: '1',
         rm: '',
@@ -91,12 +90,6 @@ class ProductManageForm extends React.PureComponent {
         axios.get('/api/admin/getProducts')
             .then(res => {
                 this.setState({ rows: res.data })
-            })
-
-        axios.get("/api/admin/getHighestNums")
-            .then(res => {
-                this.setState({ highestNums: res.data })
-                this.setState({ pc: "PD" + zeroPad(res.data.pd + 1, 6)})
             })
     }
 
@@ -138,8 +131,16 @@ class ProductManageForm extends React.PureComponent {
                     let rowsToAdd = [...this.state.rows]
                     rowsToAdd.push(newData)
                     this.setState({ rows: rowsToAdd, open3: false })
+
+                    axios.get("/api/admin/getHighestNums")
+                        .then(res => {
+                            this.setState({ highestNums: res.data })
+                            this.setState({ pc: "PD" + zeroPad(res.data.pd + 1, 6)})
+                            console.log("PD" + zeroPad(res.data.pd + 1, 6))
+                        })
                 })
                 .catch(err => {
+                    alert("There are some errors for adding products")
                 })
         }
     }
@@ -212,18 +213,22 @@ class ProductManageForm extends React.PureComponent {
     }
 
     handleAdd = (event, rowData) => {
-        setTimeout(() => document.getElementById("pn2").focus(), 100)
-        this.setState({
-            pc: '',
-            pn: '',
-            st: '',
-            un: '',
-            pr: 0,
-            br: '',
-            ac: '1',
-            rm: '',
-            open3: true
-        })
+        axios.get("/api/admin/getHighestNums")
+            .then(res => {
+                this.setState({ highestNums: res.data })
+                this.setState({ pc: "PD" + zeroPad(res.data.pd + 1, 6)})
+                this.setState({
+                    pn: '',
+                    st: '',
+                    un: '',
+                    pr: '',
+                    br: '',
+                    ac: '1',
+                    rm: '',
+                    open3: true
+                })
+                setTimeout(() => document.getElementById("pn2").focus(), 100)
+            })
     }
 
     handleEnter = event => {
@@ -360,7 +365,7 @@ class ProductManageForm extends React.PureComponent {
                                 <aside><TextField className={"m-3"} value={this.state.br} onKeyDown={this.handleEnter} id={"br2"}
                                                   label={"Brand"} onChange={e => this.setState({ br: e.target.value })}/></aside>
                                 <aside>
-                                    <Select className={"mx-3 mt-4"} defaultValue={this.state.ac} onKeyDown={this.handleEnter} style={{width: "100%"}}
+                                    <Select className={"mx-3 mt-4"} value={this.state.ac} onKeyDown={this.handleEnter} style={{width: "100%"}}
                                             label={"Account Classification"} onChange={e => {
                                         switch(e.target.value) {
                                             case '1':
